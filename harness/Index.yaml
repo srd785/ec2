@@ -1,0 +1,93 @@
+harnessApiVersion: '1.0'  
+type: OTHER  
+commandUnitType: COMMAND  
+commandUnits:  
+- command: echo "this is an exec command"  
+  commandUnitType: EXEC  
+  deploymentType: SSH  
+  name: Exec  
+  scriptType: BASH  
+  workingDirectory: dir  
+- artifactVariableName: artifact  
+  commandUnitType: SCP  
+  deploymentType: SSH  
+  destinationDirectoryPath: $WINGS_RUNTIME_PATH  
+  name: SCP  
+  source: ARTIFACTS  
+- command: |2-  
+  
+    # Execute as root and pass environment variables  
+    # su -p -  
+  
+    # Execute as root via user credentials (with root privileges)  
+    # sudo -E su -p -  
+  
+    # The following variables are absolute paths defined as:  
+    # ${HOME}/${appName}/${serviceName}/${serviceTemplateName}/[runtime|backup|staging]  
+  
+    mkdir -p "$WINGS_RUNTIME_PATH"  
+    mkdir -p "$WINGS_BACKUP_PATH"  
+    mkdir -p "$WINGS_STAGING_PATH"  
+  commandUnitType: SETUP_ENV  
+  deploymentType: SSH  
+  name: Setup Env  
+  scriptType: BASH  
+  workingDirectory: dir  
+- command: |-  
+    docker login --username="$DOCKER_USER_ID" --password="$DOCKER_USER_PASSWORD"  
+    docker run -d -it "$DOCKER_IMAGE"  
+    docker logout  
+  commandUnitType: DOCKER_START  
+  deploymentType: SSH  
+  name: Docker Start  
+  scriptType: BASH  
+- command: docker ps -a -q --filter ancestor=$IMAGE | xargs docker stop  
+  commandUnitType: DOCKER_STOP  
+  deploymentType: SSH  
+  name: Docker Stop  
+  scriptType: BASH  
+- artifactVariableName: artifact  
+  commandUnitType: DOWNLOAD_ARTIFACT  
+  deploymentType: SSH  
+  name: Download Artifact  
+  scriptType: BASH  
+  workingDirectory: ${app.defaults.RUNTIME_PATH}  
+- command: |-  
+    set -x  
+    pgrep -f "\-Dcatalina.home=$WINGS_RUNTIME_PATH/tomcat"  
+  commandUnitType: PROCESS_CHECK_RUNNING  
+  deploymentType: SSH  
+  name: Process Running  
+  scriptType: BASH  
+- command: |-  
+    set -x  
+    pgrep -f "\-Dcatalina.home=$WINGS_RUNTIME_PATH/tomcat"  
+    rc=$?  
+    if [ "$rc" -eq 0 ]  
+    then  
+    exit 1  
+    fi  
+  commandUnitType: PROCESS_CHECK_STOPPED  
+  deploymentType: SSH  
+  name: Process Stopped  
+  scriptType: BASH  
+- command: |-  
+    set -x  
+    nc -v -z -w 5 localhost 8080  
+    rc=$?  
+    if [ "$rc" -eq 0 ]  
+    then  
+    exit 1  
+    fi  
+  commandUnitType: PORT_CHECK_CLEARED  
+  deploymentType: SSH  
+  name: Port Cleared  
+  scriptType: BASH  
+- command: |-  
+    set -x  
+    nc -v -z -w 5 localhost 8080  
+  commandUnitType: PORT_CHECK_LISTENING  
+  deploymentType: SSH  
+  name: Port Listening  
+  scriptType: BASH  
+targetToAllEnv: true
