@@ -1,0 +1,15 @@
+inputSet:
+  name: demo_Inputset
+  identifier: demo_Inputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Task_d
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: Abhinai
+  object Object: pipeline.properties.ci.codebase
