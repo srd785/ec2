@@ -1,6 +1,7 @@
 #!/bin/bash/
 
 #Installing the packages
+sudo apt install git -y
 sudo snap install docker 
 sudo snap install terraform
 sudo snap install helm
