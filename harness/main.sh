@@ -13,3 +13,6 @@ sudo kubectl apply -f k8s.yaml
 sudo terraform init
 sudo terraform apply --auto-approve
 sudo sh docker_delegate.sh
+
+
+echo "hello"
