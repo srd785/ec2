@@ -16,3 +16,6 @@ sudo sh docker_delegate.sh
 
 
 echo "hello"
+
+
+echo "done"
